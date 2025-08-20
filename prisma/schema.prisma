@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  roles        UserRole[]
+  prescriptions Prescription[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime  @default(now())
+}
+
+model Role {
+  name  String    @id // "ADMIN", "DOCTOR", "DISPENSER"
+  users UserRole[]
+}
+
+model UserRole {
+  userId   String
+  roleName String
+  user     User @relation(fields: [userId], references: [id])
+  role     Role @relation(fields: [roleName], references: [name])
+  @@id([userId, roleName])
+}
+
+model Patient {
+  id           String   @id @default(uuid())
+  patientCode  String   @unique
+  ageBand      String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  pii          PatientPII?
+  prescriptions Prescription[]
+}
+
+model PatientPII {
+  patientId String  @id
+  fullName  String
+  phone     String
+  address   String
+  cnic      String  // We'll add encryption later
+  patient   Patient @relation(fields: [patientId], references: [id])
+}
+
+model Prescription {
+  id          String             @id @default(uuid())
+  patientId   String
+  doctorId    String
+  diagnosis   String
+  recommendation String
+  notes       String?
+  issuedOn    DateTime @default(now())
+  status      String   @default("DRAFT") // "DRAFT" | "FINAL"
+  items       PrescriptionItem[]
+  dispensedAt DateTime?
+  dispensedBy String?
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  doctor      User      @relation(fields: [doctorId], references: [id])
+}
+
+model PrescriptionItem {
+  id             String        @id @default(uuid())
+  prescriptionId String
+  medicineId     String
+  dosage         String
+  frequency      String
+  duration       String
+  remarks        String?
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id])
+  medicine       Medicine     @relation(fields: [medicineId], references: [id])
+}
+
+model Medicine {
+  id        String @id @default(uuid())
+  name      String
+  strength  String
+  form      String // "Tablet", "Syrup", "Injection", etc.
+  isActive  Boolean @default(true)
+  items     PrescriptionItem[]
+  
+  // Add composite unique constraint
+  @@unique([name, strength, form])
+}
+
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  actorUserId   String
+  action        String
+  resourceType  String
+  resourceId    String
+  details       Json
+  createdAt     DateTime @default(now())
+  actor         User     @relation(fields: [actorUserId], references: [id])
+}
