@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-utils'
 import { prisma } from '@/lib/dt'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 const createPatientSchema = z.object({
@@ -19,12 +20,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    // Only return patients that this doctor has created prescriptions for
+    // Always return only patients this doctor has treated (consistent behavior)
     const patients = await prisma.patient.findMany({
       where: {
         prescriptions: {
           some: {
-            doctorId: user.id // Only patients with prescriptions by this doctor
+            doctorId: user.id
           }
         }
       },
@@ -81,6 +82,21 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Create initial empty prescription to link patient to doctor
+    await prisma.prescription.create({
+      data: {
+        patientId: patient.id,
+        doctorId: user.id,
+        diagnosis: 'Initial consultation',
+        recommendation: 'Follow up as needed',
+        status: 'DRAFT',
+        issuedOn: new Date(),
+        items: {
+          create: []
+        }
+      }
+    })
+
     // Log audit trail
     await prisma.auditLog.create({
       data: {
@@ -95,6 +111,11 @@ export async function POST(request: NextRequest) {
         }
       }
     })
+
+    // Revalidate caches
+    revalidatePath('/doctor/patients')
+    revalidatePath('/doctor/prescriptions/new')
+    revalidatePath('/api/patients')
 
     return NextResponse.json({ 
       success: true, 
@@ -126,7 +147,6 @@ async function generatePatientCode(): Promise<string> {
   const prefix = 'P'
   const year = new Date().getFullYear().toString().slice(-2)
   
-  // Get the count of patients created this year
   const startOfYear = new Date(new Date().getFullYear(), 0, 1)
   const patientCount = await prisma.patient.count({
     where: {

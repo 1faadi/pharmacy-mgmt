@@ -25,16 +25,6 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
 
-  const ageBands = [
-    { value: '0-1', label: 'Infant (0-1 years)' },
-    { value: '2-12', label: 'Child (2-12 years)' },
-    { value: '13-17', label: 'Teenager (13-17 years)' },
-    { value: '18-35', label: 'Young Adult (18-35 years)' },
-    { value: '36-55', label: 'Adult (36-55 years)' },
-    { value: '56-70', label: 'Senior (56-70 years)' },
-    { value: '70+', label: 'Elderly (70+ years)' }
-  ]
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
@@ -44,8 +34,8 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required'
-    } else if (!/^\d{10,15}$/.test(formData.phone.replace(/\D/g, ''))) {
-      newErrors.phone = 'Please enter a valid phone number'
+    } else if (formData.phone.length < 10) {
+      newErrors.phone = 'Phone number must be at least 10 digits'
     }
 
     if (!formData.address.trim()) {
@@ -55,11 +45,11 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
     if (!formData.cnic.trim()) {
       newErrors.cnic = 'CNIC is required'
     } else if (!/^\d{5}-\d{7}-\d{1}$/.test(formData.cnic)) {
-      newErrors.cnic = 'CNIC format should be: 12345-1234567-1'
+      newErrors.cnic = 'CNIC must be in format: 12345-1234567-1'
     }
 
     if (!formData.ageBand) {
-      newErrors.ageBand = 'Age band is required'
+      newErrors.ageBand = 'Age group is required'
     }
 
     setErrors(newErrors)
@@ -85,7 +75,8 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create patient')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create patient')
       }
 
       const result = await response.json()
@@ -93,17 +84,18 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
       if (onSuccess) {
         onSuccess(result.patient.id)
       } else {
-        router.push(`/doctor/patients/${result.patient.id}`)
+        // After creating patient, redirect to prescription creation with patient pre-selected
+        router.push(`/doctor/prescriptions/new?patientId=${result.patient.id}`)
       }
     } catch (error) {
       console.error('Error creating patient:', error)
-      setErrors({ submit: 'Failed to create patient. Please try again.' })
+      setErrors({ submit: error instanceof Error ? error.message : 'Failed to create patient. Please try again.' })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
@@ -111,10 +103,17 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
   }
 
   const formatCNIC = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 5) return numbers
-    if (numbers.length <= 12) return `${numbers.slice(0, 5)}-${numbers.slice(5)}`
-    return `${numbers.slice(0, 5)}-${numbers.slice(5, 12)}-${numbers.slice(12, 13)}`
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '')
+    
+    // Format as 12345-1234567-1
+    if (digits.length <= 5) {
+      return digits
+    } else if (digits.length <= 12) {
+      return `${digits.slice(0, 5)}-${digits.slice(5)}`
+    } else {
+      return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12, 13)}`
+    }
   }
 
   return (
@@ -138,7 +137,7 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.fullName ? 'border-red-300' : 'border-gray-300'
             }`}
-            placeholder="Enter patient's full name"
+            placeholder="Enter full name"
           />
           {errors.fullName && (
             <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
@@ -161,6 +160,25 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
           />
           {errors.phone && (
             <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+          )}
+        </div>
+
+        <div className="md:col-span-2">
+          <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+            Address *
+          </label>
+          <textarea
+            id="address"
+            value={formData.address}
+            onChange={(e) => handleInputChange('address', e.target.value)}
+            rows={3}
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+              errors.address ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="Enter complete address"
+          />
+          {errors.address && (
+            <p className="mt-1 text-sm text-red-600">{errors.address}</p>
           )}
         </div>
 
@@ -197,35 +215,15 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
             }`}
           >
             <option value="">Select age group</option>
-            {ageBands.map((band) => (
-              <option key={band.value} value={band.value}>
-                {band.label}
-              </option>
-            ))}
+            <option value="Child (0-12)">Child (0-12)</option>
+            <option value="Teen (13-19)">Teen (13-19)</option>
+            <option value="Adult (20-59)">Adult (20-59)</option>
+            <option value="Senior (60+)">Senior (60+)</option>
           </select>
           {errors.ageBand && (
             <p className="mt-1 text-sm text-red-600">{errors.ageBand}</p>
           )}
         </div>
-      </div>
-
-      <div>
-        <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-          Address *
-        </label>
-        <textarea
-          id="address"
-          value={formData.address}
-          onChange={(e) => handleInputChange('address', e.target.value)}
-          rows={3}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-            errors.address ? 'border-red-300' : 'border-gray-300'
-          }`}
-          placeholder="Enter complete address"
-        />
-        {errors.address && (
-          <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-        )}
       </div>
 
       <div className="flex justify-end space-x-3">

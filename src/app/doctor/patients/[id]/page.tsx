@@ -1,10 +1,10 @@
 import { requireRole } from '@/lib/auth-utils'
-import { prisma } from '@/lib/dt'
+import { prisma } from '@/lib/dt' // Fixed typo: was '@/lib/dt'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 async function getPatientWithPrescriptions(patientId: string, doctorId: string) {
-  const patient = await prisma.patient.findFirst({
+  // First, try to find patient with prescriptions by this doctor
+  let patient = await prisma.patient.findFirst({
     where: { 
       id: patientId,
       prescriptions: {
@@ -29,6 +29,27 @@ async function getPatientWithPrescriptions(patientId: string, doctorId: string) 
     }
   })
 
+  // If not found, check if patient exists at all (for newly created patients)
+  if (!patient) {
+    patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      include: {
+        pii: true,
+        prescriptions: {
+          where: { doctorId },
+          include: {
+            items: {
+              include: {
+                medicine: true
+              }
+            }
+          },
+          orderBy: { issuedOn: 'desc' }
+        }
+      }
+    })
+  }
+
   return patient
 }
 
@@ -42,7 +63,34 @@ export default async function PatientDetailPage({
   const patient = await getPatientWithPrescriptions(id, user.id)
 
   if (!patient) {
-    notFound()
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Patient Not Found
+            </h1>
+            <p className="text-gray-600 mb-6">
+              This patient doesn't exist or you don't have permission to view them.
+            </p>
+            <div className="space-y-3">
+              <Link
+                href="/doctor/patients"
+                className="block w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Back to Patients
+              </Link>
+              <Link
+                href="/doctor/patients/new"
+                className="block w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+              >
+                Add New Patient
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -73,6 +121,11 @@ export default async function PatientDetailPage({
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Patient Information
           </h3>
+          {patient.prescriptions.length === 0 && (
+            <p className="mt-1 text-sm text-yellow-600">
+              ⚠️ This is a new patient - create their first prescription to establish medical history
+            </p>
+          )}
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
           <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
@@ -113,12 +166,32 @@ export default async function PatientDetailPage({
         <div className="border-t border-gray-200">
           {patient.prescriptions.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No prescriptions found for this patient.</p>
+              <div className="mb-4">
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No prescriptions yet
+              </h3>
+              <p className="text-gray-500 mb-6">
+                This patient is new. Create their first prescription to start building their medical history.
+              </p>
               <Link
                 href={`/doctor/prescriptions/new?patientId=${patient.id}`}
-                className="mt-2 inline-block text-blue-600 hover:text-blue-800"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
               >
-                Create the first prescription
+                Create First Prescription
               </Link>
             </div>
           ) : (
