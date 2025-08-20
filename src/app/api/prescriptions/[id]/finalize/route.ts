@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-utils'
 import { prisma } from '@/lib/dt'
 
 export async function POST(
-  request: NextRequest,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
   try {
     const user = await getCurrentUser()
@@ -13,14 +13,14 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const prescriptionId = context.params.id
+    const prescriptionId = params.id
 
     // Check if prescription exists and belongs to the doctor
     const prescription = await prisma.prescription.findFirst({
       where: {
         id: prescriptionId,
         doctorId: user.id,
-        status: 'DRAFT' // Can only finalize draft prescriptions
+        status: 'DRAFT'
       }
     })
 
@@ -33,9 +33,7 @@ export async function POST(
     // Update prescription status to FINAL
     const updatedPrescription = await prisma.prescription.update({
       where: { id: prescriptionId },
-      data: { 
-        status: 'FINAL'
-      }
+      data: { status: 'FINAL' }
     })
 
     // Log audit trail
