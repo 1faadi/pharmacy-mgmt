@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { X } from 'lucide-react'
 
 interface PrescriptionItem {
   medicineName: string
@@ -15,10 +14,17 @@ interface PrescriptionItem {
 interface MedicineSelectorProps {
   items: PrescriptionItem[]
   onChange: (items: PrescriptionItem[]) => void
+  errors?: Record<string, string>        // Add this prop
+  onClearError?: (fieldName: string) => void  // Add this prop
 }
 
-export default function MedicineSelector({ items, onChange }: MedicineSelectorProps) {
-  const addMedicineItem = () => {
+export default function MedicineSelector({ 
+  items, 
+  onChange, 
+  errors = {},        // Default to empty object
+  onClearError        // Add to destructuring
+}: MedicineSelectorProps) {
+  const addItem = () => {
     const newItem: PrescriptionItem = {
       medicineName: '',
       strength: '',
@@ -32,9 +38,15 @@ export default function MedicineSelector({ items, onChange }: MedicineSelectorPr
   }
 
   const updateItem = (index: number, field: keyof PrescriptionItem, value: string) => {
-    const updatedItems = [...items]
-    updatedItems[index][field] = value
+    const updatedItems = items.map((item, i) => 
+      i === index ? { ...item, [field]: value } : item
+    )
     onChange(updatedItems)
+    
+    // Clear field error when user starts typing
+    if (onClearError) {
+      onClearError(`${field}_${index}`)
+    }
   }
 
   const removeItem = (index: number) => {
@@ -42,179 +54,262 @@ export default function MedicineSelector({ items, onChange }: MedicineSelectorPr
     onChange(updatedItems)
   }
 
-  const medicineFormOptions = [
-    'Tablet', 'Capsule', 'Syrup', 'Injection', 'Drops', 'Ointment', 
-    'Cream', 'Gel', 'Powder', 'Inhaler', 'Suppository', 'Other'
-  ]
-
-  const frequencyOptions = [
-    'Once daily', 'Twice daily', 'Three times daily', 'Four times daily',
-    'Every 4 hours', 'Every 6 hours', 'Every 8 hours', 'Every 12 hours',
-    'Before meals', 'After meals', 'At bedtime', 'As needed'
-  ]
-
-  const durationOptions = [
-    '3 days', '5 days', '7 days', '10 days', '14 days', '21 days', '30 days',
-    '2 months', '3 months', '6 months', 'Until finished', 'Continuous'
-  ]
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Medicines</h3>
+        <label className="block text-sm font-medium text-gray-700">
+          Medicines *
+        </label>
         <button
           type="button"
-          onClick={addMedicineItem}
-          className="bg-green-600 text-white px-3 py-1 text-sm rounded-md hover:bg-green-700"
+          onClick={addItem}
+          className="text-blue-600 hover:text-blue-900 text-sm font-medium transition-colors"
         >
-          Add Medicine
+          + Add Medicine
         </button>
       </div>
 
-      {items.map((item, index) => (
-        <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-4">
-          <div className="flex justify-between items-start">
-            <h4 className="text-sm font-medium text-gray-700">Medicine {index + 1}</h4>
-            <button
-              type="button"
-              onClick={() => removeItem(index)}
-              className="text-red-600 hover:text-red-800"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Medicine Name, Strength, and Form */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Medicine Name *
-              </label>
-              <input
-                type="text"
-                value={item.medicineName}
-                onChange={(e) => updateItem(index, 'medicineName', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Paracetamol"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Strength *
-              </label>
-              <input
-                type="text"
-                value={item.strength}
-                onChange={(e) => updateItem(index, 'strength', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., 500mg"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Form *
-              </label>
-              <select
-                value={item.form}
-                onChange={(e) => updateItem(index, 'form', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option value="">Select form</option>
-                {medicineFormOptions.map((form) => (
-                  <option key={form} value={form}>
-                    {form}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Dosage, Frequency, and Duration */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Dosage *
-              </label>
-              <input
-                type="text"
-                value={item.dosage}
-                onChange={(e) => updateItem(index, 'dosage', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., 1 tablet, 5ml"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Frequency *
-              </label>
-              <select
-                value={item.frequency}
-                onChange={(e) => updateItem(index, 'frequency', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option value="">Select frequency</option>
-                {frequencyOptions.map((freq) => (
-                  <option key={freq} value={freq}>
-                    {freq}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Duration *
-              </label>
-              <select
-                value={item.duration}
-                onChange={(e) => updateItem(index, 'duration', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option value="">Select duration</option>
-                {durationOptions.map((dur) => (
-                  <option key={dur} value={dur}>
-                    {dur}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Special Instructions */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Special Instructions
-            </label>
-            <textarea
-              value={item.remarks}
-              onChange={(e) => updateItem(index, 'remarks', e.target.value)}
-              rows={2}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g., Take after meals, avoid alcohol, etc."
-            />
-          </div>
-        </div>
-      ))}
-
       {items.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <p>No medicines added yet.</p>
+        <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <p className="text-gray-500">No medicines added yet.</p>
           <button
             type="button"
-            onClick={addMedicineItem}
-            className="mt-2 text-blue-600 hover:text-blue-800"
+            onClick={addItem}
+            className="mt-2 text-blue-600 hover:text-blue-900 font-medium"
           >
             Add your first medicine
           </button>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {items.map((item, index) => (
+          <div key={index} className="bg-gray-50 p-4 rounded-lg border relative">
+            {/* Remove button */}
+            <button
+              type="button"
+              onClick={() => removeItem(index)}
+              className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* Medicine Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Medicine Name *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={item.medicineName}
+                    onChange={(e) => updateItem(index, 'medicineName', e.target.value)}
+                    className={`bg-white text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors[`medicineName_${index}`] 
+                        ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    placeholder="Enter medicine name"
+                  />
+                  {errors[`medicineName_${index}`] && (
+                    <div className="absolute top-2 right-2 pointer-events-none">
+                      <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Strength */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Strength *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={item.strength}
+                    onChange={(e) => updateItem(index, 'strength', e.target.value)}
+                    className={`bg-white text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors[`strength_${index}`] 
+                        ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    placeholder="e.g., 500mg"
+                  />
+                  {errors[`strength_${index}`] && (
+                    <div className="absolute top-2 right-2 pointer-events-none">
+                      <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Form */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Form *
+                </label>
+                <div className="relative">
+                  <select
+                    value={item.form}
+                    onChange={(e) => updateItem(index, 'form', e.target.value)}
+                    className={`bg-white text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors[`form_${index}`] 
+                        ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <option value="">Select form</option>
+                    <option value="Tablet">Tablet</option>
+                    <option value="Capsule">Capsule</option>
+                    <option value="Syrup">Syrup</option>
+                    <option value="Injection">Injection</option>
+                    <option value="Drops">Drops</option>
+                    <option value="Cream">Cream</option>
+                    <option value="Ointment">Ointment</option>
+                  </select>
+                  {errors[`form_${index}`] && (
+                    <div className="absolute top-2 right-2 pointer-events-none">
+                      <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Dosage */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dosage *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={item.dosage}
+                    onChange={(e) => updateItem(index, 'dosage', e.target.value)}
+                    className={`bg-white text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors[`dosage_${index}`] 
+                        ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    placeholder="e.g., 1 tablet"
+                  />
+                  {errors[`dosage_${index}`] && (
+                    <div className="absolute top-2 right-2 pointer-events-none">
+                      <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Frequency */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Frequency *
+                </label>
+                <div className="relative">
+                  <select
+                    value={item.frequency}
+                    onChange={(e) => updateItem(index, 'frequency', e.target.value)}
+                    className={`bg-white text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors[`frequency_${index}`] 
+                        ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <option value="">Select frequency</option>
+                    <option value="Once daily">Once daily</option>
+                    <option value="Twice daily">Twice daily</option>
+                    <option value="Three times daily">Three times daily</option>
+                    <option value="Four times daily">Four times daily</option>
+                    <option value="As needed">As needed</option>
+                    <option value="Before meals">Before meals</option>
+                    <option value="After meals">After meals</option>
+                  </select>
+                  {errors[`frequency_${index}`] && (
+                    <div className="absolute top-2 right-2 pointer-events-none">
+                      <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Duration *
+                </label>
+                <div className="relative">
+                  <select
+                    value={item.duration}
+                    onChange={(e) => updateItem(index, 'duration', e.target.value)}
+                    className={` bg-white text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors[`duration_${index}`] 
+                        ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <option value="">Select duration</option>
+                    <option value="3 days">3 days</option>
+                    <option value="5 days">5 days</option>
+                    <option value="7 days">7 days</option>
+                    <option value="10 days">10 days</option>
+                    <option value="14 days">14 days</option>
+                    <option value="30 days">30 days</option>
+                    <option value="Until finished">Until finished</option>
+                    <option value="As needed">As needed</option>
+                  </select>
+                  {errors[`duration_${index}`] && (
+                    <div className="absolute top-2 right-2 pointer-events-none">
+                      <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Remarks */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Special Instructions
+              </label>
+              <textarea
+                value={item.remarks}
+                onChange={(e) => updateItem(index, 'remarks', e.target.value)}
+                rows={2}
+                className="bg-white text-black block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors resize-none"
+                placeholder="Any special instructions for this medicine..."
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Overall medicines error */}
+      {errors.medicines && (
+        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+          <div className="flex items-center">
+            <svg className="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm text-red-600">At least one medicine is required</span>
+          </div>
         </div>
       )}
     </div>

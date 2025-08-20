@@ -205,7 +205,7 @@ export default function EditPrescriptionForm({ prescription }: EditPrescriptionF
           id="patient"
           value={selectedPatientId}
           onChange={(e) => setSelectedPatientId(e.target.value)}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+          className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
             errors.patient ? 'border-red-300' : 'border-gray-300'
           }`}
         >
@@ -231,7 +231,7 @@ export default function EditPrescriptionForm({ prescription }: EditPrescriptionF
           value={diagnosis}
           onChange={(e) => setDiagnosis(e.target.value)}
           rows={3}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+          className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
             errors.diagnosis ? 'border-red-300' : 'border-gray-300'
           }`}
           placeholder="Enter diagnosis details..."
@@ -259,7 +259,7 @@ export default function EditPrescriptionForm({ prescription }: EditPrescriptionF
           value={recommendation}
           onChange={(e) => setRecommendation(e.target.value)}
           rows={3}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+          className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
             errors.recommendation ? 'border-red-300' : 'border-gray-300'
           }`}
           placeholder="Enter recommendations and advice for the patient..."
@@ -279,7 +279,7 @@ export default function EditPrescriptionForm({ prescription }: EditPrescriptionF
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="bg-white text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           placeholder="Any additional notes or observations..."
         />
       </div>

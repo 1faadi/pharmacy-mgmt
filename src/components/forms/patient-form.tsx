@@ -134,7 +134,7 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
             id="fullName"
             value={formData.fullName}
             onChange={(e) => handleInputChange('fullName', e.target.value)}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.fullName ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Enter full name"
@@ -153,7 +153,7 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
             id="phone"
             value={formData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.phone ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="03001234567"
@@ -172,7 +172,7 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
             value={formData.address}
             onChange={(e) => handleInputChange('address', e.target.value)}
             rows={3}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.address ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Enter complete address"
@@ -191,7 +191,7 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
             id="cnic"
             value={formData.cnic}
             onChange={(e) => handleInputChange('cnic', formatCNIC(e.target.value))}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.cnic ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="12345-1234567-1"
@@ -210,7 +210,7 @@ export default function PatientForm({ onSuccess, initialData }: PatientFormProps
             id="ageBand"
             value={formData.ageBand}
             onChange={(e) => handleInputChange('ageBand', e.target.value)}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.ageBand ? 'border-red-300' : 'border-gray-300'
             }`}
           >

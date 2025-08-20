@@ -123,7 +123,7 @@ export default function UserForm() {
             id="displayName"
             value={formData.displayName}
             onChange={(e) => handleInputChange('displayName', e.target.value)}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.displayName ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Dr. John Smith"
@@ -142,7 +142,7 @@ export default function UserForm() {
             id="email"
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.email ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="doctor@pharmacy.com"
@@ -161,7 +161,7 @@ export default function UserForm() {
             id="password"
             value={formData.password}
             onChange={(e) => handleInputChange('password', e.target.value)}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.password ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Minimum 6 characters"
@@ -180,7 +180,7 @@ export default function UserForm() {
             id="confirmPassword"
             value={formData.confirmPassword}
             onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+            className={`bg-white text-black mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
               errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Confirm password"
