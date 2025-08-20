@@ -4,20 +4,19 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 async function getPatientWithPrescriptions(patientId: string, doctorId: string) {
-  // Only allow access to patients this doctor has treated
   const patient = await prisma.patient.findFirst({
     where: { 
       id: patientId,
       prescriptions: {
         some: {
-          doctorId: doctorId // Doctor must have created at least one prescription
+          doctorId: doctorId
         }
       }
     },
     include: {
       pii: true,
       prescriptions: {
-        where: { doctorId }, // Only show prescriptions by this doctor
+        where: { doctorId },
         include: {
           items: {
             include: {
@@ -36,10 +35,11 @@ async function getPatientWithPrescriptions(patientId: string, doctorId: string) 
 export default async function PatientDetailPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const user = await requireRole(['DOCTOR', 'ADMIN'])
-  const patient = await getPatientWithPrescriptions(params.id, user.id)
+  const { id } = await params
+  const patient = await getPatientWithPrescriptions(id, user.id)
 
   if (!patient) {
     notFound()

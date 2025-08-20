@@ -7,8 +7,8 @@ async function getPrescriptionForEdit(prescriptionId: string, userId: string) {
   const prescription = await prisma.prescription.findFirst({
     where: { 
       id: prescriptionId,
-      doctorId: userId, // Ensure doctor can only edit their own prescriptions
-      status: 'DRAFT' // Only allow editing of draft prescriptions
+      doctorId: userId,
+      status: 'DRAFT'
     },
     include: {
       patient: {
@@ -26,18 +26,18 @@ async function getPrescriptionForEdit(prescriptionId: string, userId: string) {
 export default async function EditPrescriptionPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const user = await requireRole(['DOCTOR', 'ADMIN'])
-  const prescription = await getPrescriptionForEdit(params.id, user.id)
+  const { id } = await params
+  const prescription = await getPrescriptionForEdit(id, user.id)
 
   if (!prescription) {
     notFound()
   }
 
-  // If prescription is already finalized, redirect to view page
   if (prescription.status === 'FINAL') {
-    redirect(`/doctor/prescriptions/${params.id}`)
+    redirect(`/doctor/prescriptions/${id}`)
   }
 
   return (

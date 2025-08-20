@@ -8,7 +8,7 @@ async function getPrescription(prescriptionId: string, userId: string) {
   const prescription = await prisma.prescription.findFirst({
     where: { 
       id: prescriptionId,
-      doctorId: userId // Ensure doctor can only view their own prescriptions
+      doctorId: userId
     },
     include: {
       patient: {
@@ -29,10 +29,11 @@ async function getPrescription(prescriptionId: string, userId: string) {
 export default async function PrescriptionDetailPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const user = await requireRole(['DOCTOR', 'ADMIN'])
-  const prescription = await getPrescription(params.id, user.id)
+  const { id } = await params
+  const prescription = await getPrescription(id, user.id)
 
   if (!prescription) {
     notFound()

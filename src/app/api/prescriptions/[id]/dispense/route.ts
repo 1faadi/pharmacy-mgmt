@@ -1,45 +1,34 @@
+// src/app/api/prescriptions/[id]/dispense/route.ts
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-utils'
 import { prisma } from '@/lib/dt'
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// (No type alias. No inline type. No destructuring in the signature.)
+export async function POST(req: Request, context: any) {
   try {
     const user = await getCurrentUser()
-    
-    if (!user || !user.roles.includes('DISPENSER')) {
+    if (!user || !user.roles?.includes('DISPENSER')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const prescriptionId = params.id
+    const { id: prescriptionId } = (context?.params ?? {}) as { id: string }
 
-    // Check if prescription exists and is FINAL (not yet dispensed)
     const prescription = await prisma.prescription.findFirst({
-      where: {
-        id: prescriptionId,
-        status: 'FINAL',
-        dispensedAt: null
-      }
+      where: { id: prescriptionId, status: 'FINAL', dispensedAt: null },
     })
 
     if (!prescription) {
-      return NextResponse.json({ 
-        error: 'Prescription not found or already dispensed' 
-      }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Prescription not found or already dispensed' },
+        { status: 404 },
+      )
     }
 
-    // Update prescription as dispensed
     const updatedPrescription = await prisma.prescription.update({
       where: { id: prescriptionId },
-      data: { 
-        dispensedAt: new Date(),
-        dispensedBy: user.id
-      }
+      data: { dispensedAt: new Date(), dispensedBy: user.id },
     })
 
-    // Log audit trail
     await prisma.auditLog.create({
       data: {
         actorUserId: user.id,
@@ -48,20 +37,14 @@ export async function POST(
         resourceId: prescriptionId,
         details: {
           dispensedAt: new Date().toISOString(),
-          dispenserName: user.name
-        }
-      }
+          dispenserName: user.name,
+        },
+      },
     })
 
-    return NextResponse.json({ 
-      success: true,
-      prescription: updatedPrescription
-    })
-
-  } catch (error) {
-    console.error('Error dispensing prescription:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error' 
-    }, { status: 500 })
+    return NextResponse.json({ success: true, prescription: updatedPrescription })
+  } catch (err) {
+    console.error('Error dispensing prescription:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

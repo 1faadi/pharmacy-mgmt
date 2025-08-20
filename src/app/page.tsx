@@ -1,27 +1,22 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-import SessionProvider from '@/components/providers/session-provider'
+import { getCurrentUser } from '@/lib/auth-utils'
+import { redirect } from 'next/navigation'
 
-const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'Pharmacy Management System',
-  description: 'Prescription and dispensing system',
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        <SessionProvider>
-          {children}
-        </SessionProvider>
-      </body>
-    </html>
-  )
+export default async function HomePage() {
+  const user = await getCurrentUser()
+  
+  if (!user) {
+    redirect('/login')
+  }
+  
+  // Redirect based on user role
+  if (user.roles.includes('DOCTOR')) {
+    redirect('/doctor')
+  } else if (user.roles.includes('DISPENSER')) {
+    redirect('/dispenser')
+  } else if (user.roles.includes('ADMIN')) {
+    redirect('/admin')
+  }
+  
+  // Fallback
+  redirect('/login')
 }

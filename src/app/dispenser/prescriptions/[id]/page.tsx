@@ -4,18 +4,16 @@ import { notFound } from 'next/navigation'
 import DispenserPrescriptionActions from '@/components/dispenser/prescription-actions'
 
 async function getPrescriptionForDispenser(prescriptionId: string) {
-  // Get prescription with redacted patient info (no PII)
   const prescription = await prisma.prescription.findFirst({
     where: { 
       id: prescriptionId,
-      status: 'FINAL' // Dispensers can only view finalized prescriptions
+      status: 'FINAL'
     },
     include: {
       patient: {
         select: {
           patientCode: true,
           ageBand: true
-          // NO PII - no fullName, phone, address, cnic
         }
       },
       items: {
@@ -33,10 +31,11 @@ async function getPrescriptionForDispenser(prescriptionId: string) {
 export default async function DispenserPrescriptionDetailPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const user = await requireRole(['DISPENSER', 'ADMIN'])
-  const prescription = await getPrescriptionForDispenser(params.id)
+  const { id } = await params
+  const prescription = await getPrescriptionForDispenser(id)
 
   if (!prescription) {
     notFound()
@@ -126,7 +125,7 @@ export default async function DispenserPrescriptionDetailPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Doctor's Recommendation</dt>
+                <dt className="text-sm font-medium text-gray-500">Doctor&apos;s Recommendation</dt>
                 <dd className="mt-1 text-sm text-gray-900 bg-blue-50 p-3 rounded-md">
                   {prescription.recommendation}
                 </dd>
