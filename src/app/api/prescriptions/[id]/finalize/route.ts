@@ -4,7 +4,7 @@ import { prisma } from '@/lib/dt'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const user = await getCurrentUser()
@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const prescriptionId = params.id
+    const prescriptionId = context.params.id
 
     // Check if prescription exists and belongs to the doctor
     const prescription = await prisma.prescription.findFirst({

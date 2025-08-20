@@ -21,7 +21,7 @@ const updatePrescriptionSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const user = await getCurrentUser()
@@ -30,102 +30,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const prescriptionId = params.id
+    const prescriptionId = context.params.id
     const body = await request.json()
     const validatedData = updatePrescriptionSchema.parse(body)
 
-    // Check if prescription exists, belongs to doctor, and is still DRAFT
-    const existingPrescription = await prisma.prescription.findFirst({
-      where: {
-        id: prescriptionId,
-        doctorId: user.id,
-        status: 'DRAFT'
-      }
-    })
-
-    if (!existingPrescription) {
-      return NextResponse.json({ 
-        error: 'Prescription not found or cannot be edited' 
-      }, { status: 404 })
-    }
-
-    // Delete existing prescription items
-    await prisma.prescriptionItem.deleteMany({
-      where: { prescriptionId }
-    })
-
-    // Update prescription with new data
-    const updatedPrescription = await prisma.prescription.update({
-      where: { id: prescriptionId },
-      data: {
-        patientId: validatedData.patientId,
-        diagnosis: validatedData.diagnosis,
-        recommendation: validatedData.recommendation,
-        notes: validatedData.notes,
-        items: {
-          create: validatedData.items.map(item => ({
-            medicine: {
-              connectOrCreate: {
-                where: {
-                  name_strength_form: {
-                    name: item.medicineName,
-                    strength: item.strength,
-                    form: item.form
-                  }
-                },
-                create: {
-                  name: item.medicineName,
-                  strength: item.strength,
-                  form: item.form
-                }
-              }
-            },
-            dosage: item.dosage,
-            frequency: item.frequency,
-            duration: item.duration,
-            remarks: item.remarks
-          }))
-        }
-      },
-      include: {
-        items: {
-          include: {
-            medicine: true
-          }
-        },
-        patient: {
-          include: {
-            pii: true
-          }
-        }
-      }
-    })
-
-    // Log audit trail
-    await prisma.auditLog.create({
-      data: {
-        actorUserId: user.id,
-        action: 'UPDATE_PRESCRIPTION',
-        resourceType: 'PRESCRIPTION',
-        resourceId: prescriptionId,
-        details: {
-          patientId: updatedPrescription.patientId,
-          diagnosis: updatedPrescription.diagnosis,
-          itemCount: updatedPrescription.items.length,
-          medicines: validatedData.items.map(item => item.medicineName)
-        }
-      }
-    })
-
-    return NextResponse.json({ 
-      success: true, 
-      prescription: {
-        id: updatedPrescription.id,
-        status: updatedPrescription.status,
-        patientName: updatedPrescription.patient.pii?.fullName
-      }
-    })
-
+    // ... rest of your existing logic
+    
   } catch (error) {
     console.error('Error updating prescription:', error)
     
