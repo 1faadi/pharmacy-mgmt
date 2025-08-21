@@ -120,7 +120,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         const frequencies = []
         if (medicine.frequencies[0]) frequencies.push('Once daily')
         if (medicine.frequencies[1]) frequencies.push('Twice daily')
-        if (medicine.frequencies[2]) frequencies.push('Three times daily')
+        if (medicine.frequencies) frequencies.push('Three times daily')
 
         const freqText = frequencies.length > 0 ? frequencies.join(', ') : 'As directed'
         return `${index + 1}. ${medicine.name} - ${freqText}`
@@ -366,10 +366,10 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         </div>
                     </div>
 
-                    {/* Form View with validation highlights */}
+                    {/* Form View - UPDATED WIDTH DISTRIBUTION */}
                     <div className="form-view flex h-auto min-h-[500px]">
-                        {/* Patient Details Section */}
-                        <div className="w-1/5 border-r border-gray-400 p-4">
+                        {/* Patient Details Section - UPDATED: 25% width */}
+                        <div className="w-1/4 border-r border-gray-400 p-4"> {/* ✅ Changed from w-1/5 to w-1/4 (25%) */}
                             <div className="space-y-3">
                                 {/* Name - Required */}
                                 <div>
@@ -441,8 +441,8 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </div>
                         </div>
 
-                        {/* Medicines Section */}
-                        <div className="w-2/5 border-r border-gray-400 p-6">
+                        {/* Medicines Section - UPDATED: 50% width */}
+                        <div className="w-1/2 border-r border-gray-400 p-6"> {/* ✅ Changed from w-2/5 to w-1/2 (50%) */}
                             <label className="block text-sm font-semibold text-gray-700 mb-3">
                                 Medicines <span className="text-red-500">*</span>
                             </label>
@@ -502,8 +502,8 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </p>
                         </div>
 
-                        {/* Diagnosis & Tests Section */}
-                        <div className="w-2/5 p-6">
+                        {/* Diagnosis & Tests Section - UPDATED: 25% width */}
+                        <div className="w-1/4 p-6"> {/* ✅ Changed from w-2/5 to w-1/4 (25%) */}
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Diagnosis</label>
                                 <textarea
