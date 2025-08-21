@@ -18,10 +18,10 @@ export default function Navigation() {
   // In the navigation items section, update the doctor items:
   if (isDoctor) {
     navItems.push(
-      { href: '/doctor', label: 'Dashboard' },
-      { href: '/doctor/prescriptions', label: 'My Prescriptions' }, // Add this line
-      { href: '/doctor/prescriptions/new', label: 'New Prescription' },
-      { href: '/doctor/patients', label: 'Patients' }
+      { href: '/doctor/raw-prescriptions', label: 'Dashboard' },
+      { href: '/doctor/prescription-pad', label: 'New Prescriptions' }, // Add this line
+      // { href: '/doctor/prescriptions/new', label: 'New Prescription' },
+      // { href: '/doctor/patients', label: 'Patients' }
     )
   }
 

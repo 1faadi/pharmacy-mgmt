@@ -30,7 +30,7 @@ export default function LoginPage() {
       // Get session to determine redirect based on role
       const session = await getSession()
       if (session?.user.roles.includes('DOCTOR')) {
-        router.push('/doctor')
+        router.push('/doctor/welcome')
       } else if (session?.user.roles.includes('DISPENSER')) {
         router.push('/dispenser')
       } else if (session?.user.roles.includes('ADMIN')) {

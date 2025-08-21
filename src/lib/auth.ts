@@ -66,6 +66,15 @@ export const authOptions: NextAuthOptions = {
         session.user.roles = token.roles as string[]
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // If the URL is already a full URL starting with baseUrl, use it
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      
+      // Default redirect to base URL
+      return baseUrl
     }
   },
   pages: {

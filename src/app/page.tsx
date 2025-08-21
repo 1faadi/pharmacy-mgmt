@@ -10,7 +10,7 @@ export default async function HomePage() {
   
   // Redirect based on user role
   if (user.roles.includes('DOCTOR')) {
-    redirect('/doctor')
+    redirect('/doctor/welcome')
   } else if (user.roles.includes('DISPENSER')) {
     redirect('/dispenser')
   } else if (user.roles.includes('ADMIN')) {

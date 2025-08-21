@@ -16,6 +16,7 @@ model User {
   prescriptions Prescription[]
   auditLogs    AuditLog[]
   createdAt    DateTime  @default(now())
+  rawPrescriptions RawPrescription[]
 }
 
 model Role {
@@ -100,4 +101,44 @@ model AuditLog {
   details       Json
   createdAt     DateTime @default(now())
   actor         User     @relation(fields: [actorUserId], references: [id])
+}
+model RawPrescription {
+  id        String   @id @default(cuid())
+  doctorId  String   @map("doctor_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Patient Information
+  patientName    String? @map("patient_name")
+  patientAge     String? @map("patient_age")
+  patientGender  String? @map("patient_gender")
+  patientCNIC    String? @map("patient_cnic")
+  patientPhone   String? @map("patient_phone")
+  patientAddress String? @map("patient_address")
+  
+  // Medical Information
+  diagnosis       String?
+  tests           String?
+  recommendations String?
+  
+  // Relations
+  doctor    User                    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  medicines RawPrescriptionMedicine[]
+  
+  @@map("raw_prescriptions")
+}
+
+model RawPrescriptionMedicine {
+  id               String @id @default(cuid())
+  prescriptionId   String @map("prescription_id")
+  medicineOrder    Int    @map("medicine_order")
+  medicineName     String @map("medicine_name")
+  frequency1       Boolean @default(false) // Once daily
+  frequency2       Boolean @default(false) // Twice daily  
+  frequency3       Boolean @default(false) // Three times daily
+  
+  // Relations
+  prescription RawPrescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  
+  @@map("raw_prescription_medicines")
 }
