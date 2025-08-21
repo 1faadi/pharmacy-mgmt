@@ -25,12 +25,12 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
     const componentRef = useRef<HTMLDivElement>(null)
     const router = useRouter()
 
-    // Patient information
+    // Patient information - UPDATED: replaced patientAddress with patientGender
     const [patientName, setPatientName] = useState('')
     const [patientAge, setPatientAge] = useState('')
     const [patientCNIC, setPatientCNIC] = useState('')
     const [patientPhone, setPatientPhone] = useState('')
-    const [patientAddress, setPatientAddress] = useState('')
+    const [patientGender, setPatientGender] = useState('')
 
     // Medical information
     const [medicines, setMedicines] = useState<Medicine[]>([
@@ -49,6 +49,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         }
         setMedicines([...medicines, newMedicine])
     }
+    
     const removeMedicine = (id: string) => {
         if (medicines.length > 1) {
             setMedicines(medicines.filter(med => med.id !== id))
@@ -79,18 +80,19 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         const frequencies = []
         if (medicine.frequencies[0]) frequencies.push('Once daily')
         if (medicine.frequencies[1]) frequencies.push('Twice daily')
-        if (medicine.frequencies[2]) frequencies.push('Three times daily')
+        if (medicine.frequencies) frequencies.push('Three times daily')
 
         const freqText = frequencies.length > 0 ? frequencies.join(', ') : 'As directed'
 
         return `${index + 1}. ${medicine.name} - ${freqText}`
     }
+    
     // Add these new state variables
     const [isSaving, setIsSaving] = useState(false)
     const [savedPrescriptionId, setSavedPrescriptionId] = useState<string | null>(null)
     const [showSaveSuccess, setShowSaveSuccess] = useState(false)
 
-    // Add save function
+    // Add save function - UPDATED: patientGender instead of patientAddress
     const handleSave = async () => {
         setIsSaving(true)
         try {
@@ -102,13 +104,12 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                 body: JSON.stringify({
                     patientName,
                     patientAge,
-
                     patientCNIC,
                     patientPhone,
-                    patientAddress,
+                    patientGender, // UPDATED: changed from patientAddress
                     diagnosis,
                     tests,
-                    recommendations: '', // If you want to add recommendations field
+                    recommendations: '',
                     medicines: medicines.map(med => ({
                         id: med.id,
                         name: med.name,
@@ -135,6 +136,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
             setIsSaving(false)
         }
     }
+    
     // Print functionality
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
@@ -210,7 +212,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
     return (
         <div className="min-h-screen bg-gray-100 py-8">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-7xl mx-auto"> {/* UPDATED: increased max-width for better layout */}
                 {/* Control Buttons */}
                 <div className="no-print mb-4 flex justify-between items-center bg-white p-4 rounded-lg shadow">
                     <button
@@ -241,7 +243,13 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         >
                             🖨️ Print
                         </button>
-                       
+                        <button
+                            onClick={handleDownloadPDF}
+                            disabled={isGeneratingPDF}
+                            className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
+                        >
+                            {isGeneratingPDF ? '📄 Generating...' : '📄 Download PDF'}
+                        </button>
                     </div>
                 </div>
 
@@ -277,11 +285,11 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         </div>
                     </div>
 
-                    {/* Form View - Editable Form */}
+                    {/* Form View - Editable Form with UPDATED LAYOUT */}
                     <div className="form-view flex h-auto min-h-[500px]">
-                        {/* Section 1: Patient Details - 1/3 width */}
-                        <div className="w-1/3 border-r border-gray-400 p-6">
-                            <div className="space-y-4">
+                        {/* Section 1: Patient Details - REDUCED WIDTH (1/5) */}
+                        <div className="w-1/5 border-r border-gray-400 p-4"> {/* UPDATED: w-1/5 instead of w-1/3, reduced padding */}
+                            <div className="space-y-3"> {/* UPDATED: reduced spacing */}
                                 {/* Name */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Name</label>
@@ -289,7 +297,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         type="text"
                                         value={patientName}
                                         onChange={(e) => setPatientName(e.target.value)}
-                                        className="w-full h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black"
+                                        className="w-full h-9 px-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm" // UPDATED: smaller height and padding
                                     />
                                 </div>
 
@@ -300,7 +308,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         type="text"
                                         value={patientAge}
                                         onChange={(e) => setPatientAge(e.target.value)}
-                                        className="w-full h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black"
+                                        className="w-full h-9 px-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
                                     />
                                 </div>
 
@@ -311,7 +319,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         type="text"
                                         value={patientCNIC}
                                         onChange={(e) => setPatientCNIC(e.target.value)}
-                                        className="w-full h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black"
+                                        className="w-full h-9 px-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
                                         maxLength={15}
                                     />
                                 </div>
@@ -323,32 +331,36 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         type="text"
                                         value={patientPhone}
                                         onChange={(e) => setPatientPhone(e.target.value)}
-                                        className="w-full h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black"
+                                        className="w-full h-9 px-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
                                     />
                                 </div>
 
-                                {/* Address */}
+                                {/* Gender - UPDATED: replaced Address with Gender */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Address</label>
-                                    <textarea
-                                        value={patientAddress}
-                                        onChange={(e) => setPatientAddress(e.target.value)}
-                                        className="w-full h-20 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black resize-none"
-                                    />
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Gender</label>
+                                    <select
+                                        value={patientGender}
+                                        onChange={(e) => setPatientGender(e.target.value)}
+                                        className="w-full h-9 px-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
+                                    >
+                                        <option value="">Select</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Section 2: Medicines - 1/3 width */}
-                        {/* Section 2: Medicines - 1/3 width with Scrollable Container */}
-                        <div className="w-1/3 border-r border-gray-400 p-6">
+                        {/* Section 2: Medicines - INCREASED WIDTH (2/5) */}
+                        <div className="w-2/5 border-r border-gray-400 p-6"> {/* UPDATED: w-2/5 instead of w-1/3 */}
                             <label className="block text-sm font-semibold text-gray-700 mb-3">Medicines</label>
 
                             {/* Scrollable Medicine Container */}
                             <div className="max-h-80 overflow-y-auto pr-2 mb-4 border rounded-md border-gray-200 bg-gray-50">
                                 <div className="space-y-3 p-3">
                                     {medicines.map((medicine) => (
-                                        <div key={medicine.id} className="flex items-center gap-2  p-2 rounded ">
+                                        <div key={medicine.id} className="flex items-center gap-2 bg-white p-2 rounded border">
                                             {/* Medicine Name Input */}
                                             <input
                                                 type="text"
@@ -373,7 +385,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                                 ))}
                                             </div>
 
-                                            {/* Remove Medicine Button (for medicines beyond first one) */}
+                                            {/* Remove Medicine Button */}
                                             {medicines.length > 1 && (
                                                 <button
                                                     type="button"
@@ -414,9 +426,8 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </p>
                         </div>
 
-
-                        {/* Section 3: Diagnosis & Tests - 1/3 width */}
-                        <div className="w-1/3 p-6">
+                        {/* Section 3: Diagnosis & Tests - SAME WIDTH (2/5) */}
+                        <div className="w-2/5 p-6"> {/* UPDATED: w-2/5 instead of w-1/3 */}
                             {/* Diagnosis */}
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Diagnosis</label>
@@ -441,7 +452,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         </div>
                     </div>
 
-                    {/* Print View - Clean Prescription Format */}
+                    {/* Print View - Clean Prescription Format - UNCHANGED PDF LAYOUT */}
                     <div className="print-view hidden" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12px', padding: '20px' }}>
                         {/* Patient Information Section */}
                         <div style={{ marginBottom: '20px', paddingBottom: '10px', borderBottom: '1px solid #000' }}>
@@ -449,9 +460,9 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                 <div style={{ width: '60%' }}>
                                     <p><strong>Name:</strong> {patientName}</p>
                                     <p><strong>Age:</strong> {patientAge}</p>
+                                    <p><strong>Gender:</strong> {patientGender}</p> {/* UPDATED: Gender instead of Address */}
                                     <p><strong>CNIC:</strong> {patientCNIC}</p>
                                     <p><strong>Phone:</strong> {patientPhone}</p>
-                                    <p><strong>Address:</strong> {patientAddress}</p>
                                 </div>
                                 <div style={{ width: '35%', textAlign: 'right' }}>
                                     <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
@@ -460,7 +471,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </div>
                         </div>
 
-                        {/* Main Content in 3 Sections */}
+                        {/* Main Content in 3 Sections - PDF LAYOUT UNCHANGED */}
                         <div style={{ display: 'flex', minHeight: '300px' }}>
                             {/* Left Section - Diagnosis */}
                             <div style={{ width: '33%', paddingRight: '15px', borderRight: '1px solid #000' }}>
