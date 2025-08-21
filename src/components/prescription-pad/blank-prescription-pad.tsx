@@ -243,13 +243,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         >
                             🖨️ Print
                         </button>
-                        <button
-                            onClick={handleDownloadPDF}
-                            disabled={isGeneratingPDF}
-                            className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
-                        >
-                            {isGeneratingPDF ? '📄 Generating...' : '📄 Download PDF'}
-                        </button>
+                        
                     </div>
                 </div>
 
