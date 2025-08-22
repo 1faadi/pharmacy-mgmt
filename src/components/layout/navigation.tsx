@@ -330,7 +330,7 @@ const menuItemVariants: Variants = {
           {/* Mobile Sign Out Button */}
           <motion.button
             onClick={handleSignOut}
-            className="w-full mt-4 mx-4 bg-red-600 text-white px-4 py-3 text-base font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
+            className="w-full mt-4  bg-red-600 text-white px-4 py-3 text-base font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
