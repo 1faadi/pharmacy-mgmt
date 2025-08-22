@@ -42,9 +42,9 @@ export default function RawPrescriptionViewer({ prescription }: RawPrescriptionV
     // Format medicine for display - convert boolean frequencies to readable text
     const formatMedicineForDisplay = (medicine: any, index: number) => {
         const frequencies = []
-        if (medicine.frequency1) frequencies.push('Once daily')
-        if (medicine.frequency2) frequencies.push('Twice daily')
-        if (medicine.frequency3) frequencies.push('Three times daily')
+        if (medicine.frequency1) frequencies.push('Morning')
+        if (medicine.frequency2) frequencies.push('Afternoon')
+        if (medicine.frequency3) frequencies.push('Evening')
 
         const freqText = frequencies.length > 0 ? frequencies.join(', ') : 'As directed'
         return `${index + 1}. ${medicine.medicineName} - ${freqText}`
