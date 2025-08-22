@@ -41,10 +41,33 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
     const [tests, setTests] = useState('')
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
+    // ✅ FORM RESET FUNCTION
+    const resetForm = () => {
+        setPatientName('')
+        setPatientAge('')
+        setPatientCNIC('')
+        setPatientPhone('')
+        setPatientGender('')
+        setMedicines([{ id: '1', name: '', frequencies: [false, false, false] }])
+        setDiagnosis('')
+        setTests('')
+        setSavedPrescriptionId(null)
+        setShowSaveSuccess(false)
+        
+        // Show reset confirmation toast
+        toast.success('Form cleared! Ready for new prescription.', {
+            position: 'top-center',
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+        })
+    }
+
     // ✅ VALIDATION FUNCTION
     const validateForm = (): boolean => {
         if (!patientName.trim()) {
-            toast.error(' Please enter the patient\'s name!', {
+            toast.error('Please enter the patient\'s name!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -55,7 +78,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         }
 
         if (!patientAge.trim()) {
-            toast.error(' Please enter the patient\'s age!', {
+            toast.error('Please enter the patient\'s age!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -67,7 +90,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
         const hasValidMedicine = medicines.some(med => med.name.trim() !== '')
         if (!hasValidMedicine) {
-            toast.error(' Please add at least one medicine!', {
+            toast.error('Please add at least one medicine!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -80,7 +103,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         return true
     }
 
-    // Medicine management
+    // Medicine management functions (unchanged)
     const addMedicine = () => {
         const newMedicine: Medicine = {
             id: Date.now().toString(),
@@ -120,7 +143,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         const frequencies = []
         if (medicine.frequencies[0]) frequencies.push('Morning')
         if (medicine.frequencies[1]) frequencies.push('Afternoon')
-        if (medicine.frequencies[2]) frequencies.push('Evening') // Fixed the typo
+        if (medicine.frequencies[2]) frequencies.push('Evening')
 
         const freqText = frequencies.length > 0 ? frequencies.join(', ') : 'As directed'
         return `${index + 1}. ${medicine.name} - ${freqText}`
@@ -131,7 +154,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
     const [savedPrescriptionId, setSavedPrescriptionId] = useState<string | null>(null)
     const [showSaveSuccess, setShowSaveSuccess] = useState(false)
 
-    // ✅ UPDATED SAVE FUNCTION WITH VALIDATION
+    // ✅ UPDATED SAVE FUNCTION WITH FORM RESET
     const handleSave = async () => {
         if (!validateForm()) {
             return
@@ -177,7 +200,10 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                 pauseOnHover: true,
             })
 
-            setTimeout(() => setShowSaveSuccess(false), 3000)
+            // ✅ RESET FORM AFTER SUCCESSFUL SAVE
+            setTimeout(() => {
+                resetForm()
+            }, 2000) // Wait 2 seconds to show success message, then reset
 
         } catch (error) {
             console.error('Error saving prescription:', error)
@@ -193,7 +219,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         }
     }
 
-    // ✅ UPDATED PRINT FUNCTION WITH VALIDATION
+    // Print and PDF functions (unchanged)
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
         documentTitle: `Raw-Prescription-${patientName.replace(/\s+/g, '-') || 'Blank'}-${new Date().toLocaleDateString()}`,
@@ -222,7 +248,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         `
     })
 
-    // ✅ UPDATED PDF DOWNLOAD FUNCTION WITH VALIDATION
     const handleDownloadPDF = async () => {
         if (!validateForm()) {
             return
@@ -263,7 +288,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
             pdf.save(fileName)
 
             toast.update(loadingToast, {
-                render: '✅ PDF downloaded successfully!',
+                render: 'PDF downloaded successfully!',
                 type: 'success',
                 isLoading: false,
                 autoClose: 3000,
@@ -276,7 +301,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
             if (printView) (printView as HTMLElement).style.display = 'none'
         } catch (error) {
             console.error('Error generating PDF:', error)
-            toast.error(' Failed to generate PDF. Please try again!', {
+            toast.error('❌ Failed to generate PDF. Please try again!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -291,7 +316,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
     return (
         <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Control Buttons - Responsive */}
+                {/* Control Buttons - Enhanced with New Prescription Button */}
                 <div className="no-print mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg shadow">
                     <button
                         onClick={() => router.push('/doctor/welcome')}
@@ -303,11 +328,20 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                     {/* Success Message */}
                     {showSaveSuccess && (
                         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded w-full sm:w-auto text-center">
-                            ✅ Prescription saved successfully!
+                            Prescription saved successfully!
                         </div>
                     )}
 
                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+                        {/* ✅ NEW PRESCRIPTION BUTTON */}
+                        <button
+                            onClick={resetForm}
+                            className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                            title="Clear form and start new prescription"
+                        >
+                            + New Prescription
+                        </button>
+                        
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
@@ -315,6 +349,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         >
                             {isSaving ? '💾 Saving...' : '💾 Save Prescription'}
                         </button>
+                        
                         <button
                             onClick={() => {
                                 if (validateForm()) {
@@ -325,11 +360,12 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         >
                             🖨️ Print
                         </button>
+                        
                        
                     </div>
                 </div>
 
-                {/* Prescription Form */}
+                {/* Prescription Form - (Rest remains the same as your original code) */}
                 <div ref={componentRef} className="bg-white shadow-lg rounded-lg overflow-hidden">
                     {/* Header - Responsive */}
                     <div className="border-b-4 border-blue-800 p-4 sm:p-6">
@@ -358,12 +394,11 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         </div>
                     </div>
 
-                    {/* Form View - RESPONSIVE LAYOUT */}
+                    {/* Form View - RESPONSIVE LAYOUT (same as original) */}
                     <div className="form-view flex flex-col lg:flex-row lg:h-auto lg:min-h-[500px]">
-                        {/* Patient Details Section - 25% on desktop, full width on mobile */}
+                        {/* Patient Details Section */}
                         <div className="w-full lg:w-1/4 lg:border-r lg:border-gray-400 border-b lg:border-b-0 border-gray-400 p-4">
                             <div className="space-y-3">
-                                {/* Name - Required */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                                         Name <span className="text-red-500">*</span>
@@ -379,7 +414,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                     />
                                 </div>
 
-                                {/* Age - Required */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                                         Age <span className="text-red-500">*</span>
@@ -395,7 +429,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                     />
                                 </div>
 
-                                {/* CNIC */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">CNIC</label>
                                     <input
@@ -408,7 +441,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                     />
                                 </div>
 
-                                {/* Phone */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
                                     <input
@@ -420,7 +452,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                     />
                                 </div>
 
-                                {/* Gender */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Gender</label>
                                     <select
@@ -437,7 +468,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </div>
                         </div>
 
-                        {/* Medicines Section - 50% on desktop, full width on mobile */}
+                        {/* Medicines Section */}
                         <div className="w-full lg:w-1/2 lg:border-r lg:border-gray-400 border-b lg:border-b-0 border-gray-400 p-4 lg:p-6">
                             <label className="block text-sm font-semibold text-gray-700 mb-3">
                                 Medicines <span className="text-red-500">*</span>
@@ -498,7 +529,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </p>
                         </div>
 
-                        {/* Diagnosis & Tests Section - 25% on desktop, full width on mobile */}
+                        {/* Diagnosis & Tests Section */}
                         <div className="w-full lg:w-1/4 p-4 lg:p-6">
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Diagnosis</label>
@@ -521,7 +552,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         </div>
                     </div>
 
-                    {/* Print View - Clean Format (unchanged) */}
+                    {/* Print View - Clean Format (same as original) */}
                     <div className="print-view hidden" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12px', padding: '20px' }}>
                         <div style={{ marginBottom: '20px', paddingBottom: '10px', borderBottom: '1px solid #000' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
