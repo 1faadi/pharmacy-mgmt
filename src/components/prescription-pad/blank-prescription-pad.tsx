@@ -118,9 +118,9 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         if (!medicine.name.trim()) return null
 
         const frequencies = []
-        if (medicine.frequencies[0]) frequencies.push('Once daily')
-        if (medicine.frequencies[1]) frequencies.push('Twice daily')
-        if (medicine.frequencies) frequencies.push('Three times daily')
+        if (medicine.frequencies[0]) frequencies.push('Morning')
+        if (medicine.frequencies[1]) frequencies.push('Afternoon')
+        if (medicine.frequencies[2]) frequencies.push('Evening') // Fixed the typo
 
         const freqText = frequencies.length > 0 ? frequencies.join(', ') : 'As directed'
         return `${index + 1}. ${medicine.name} - ${freqText}`
@@ -133,7 +133,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
     // ✅ UPDATED SAVE FUNCTION WITH VALIDATION
     const handleSave = async () => {
-        // Validate form before saving
         if (!validateForm()) {
             return
         }
@@ -170,7 +169,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
             setSavedPrescriptionId(result.prescription.id)
             setShowSaveSuccess(true)
 
-            // Show success toast
             toast.success('✅ Prescription saved successfully!', {
                 position: 'top-center',
                 autoClose: 3000,
@@ -179,7 +177,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                 pauseOnHover: true,
             })
 
-            // Hide success message after 3 seconds
             setTimeout(() => setShowSaveSuccess(false), 3000)
 
         } catch (error) {
@@ -227,7 +224,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
     // ✅ UPDATED PDF DOWNLOAD FUNCTION WITH VALIDATION
     const handleDownloadPDF = async () => {
-        // Validate form before generating PDF
         if (!validateForm()) {
             return
         }
@@ -236,12 +232,10 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
         setIsGeneratingPDF(true)
         try {
-            // Show loading toast
             const loadingToast = toast.loading('📄 Generating PDF...', {
                 position: 'top-center',
             })
 
-            // Hide controls and form, show print view
             const printButtons = componentRef.current.querySelectorAll('.no-print')
             const formView = componentRef.current.querySelector('.form-view')
             const printView = componentRef.current.querySelector('.print-view')
@@ -268,7 +262,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
             const fileName = `Raw-Prescription-${patientName.replace(/\s+/g, '-') || 'Blank'}-${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`
             pdf.save(fileName)
 
-            // Update loading toast to success
             toast.update(loadingToast, {
                 render: '✅ PDF downloaded successfully!',
                 type: 'success',
@@ -278,7 +271,6 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                 pauseOnHover: true,
             })
 
-            // Restore original view
             printButtons.forEach(btn => (btn as HTMLElement).style.display = '')
             if (formView) (formView as HTMLElement).style.display = 'flex'
             if (printView) (printView as HTMLElement).style.display = 'none'
@@ -297,29 +289,29 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 py-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Control Buttons */}
-                <div className="no-print mb-4 flex justify-between items-center bg-white p-4 rounded-lg shadow">
+        <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Control Buttons - Responsive */}
+                <div className="no-print mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg shadow">
                     <button
                         onClick={() => router.push('/doctor/welcome')}
-                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors w-full sm:w-auto justify-center sm:justify-start"
                     >
                         ← Back to Dashboard
                     </button>
 
                     {/* Success Message */}
                     {showSaveSuccess && (
-                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded">
+                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded w-full sm:w-auto text-center">
                             ✅ Prescription saved successfully!
                         </div>
                     )}
 
-                    <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                            className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 transition-colors"
                         >
                             {isSaving ? '💾 Saving...' : '💾 Save Prescription'}
                         </button>
@@ -329,35 +321,35 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                     handlePrint()
                                 }
                             }}
-                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
                         >
                             🖨️ Print
                         </button>
-                      
+                       
                     </div>
                 </div>
 
                 {/* Prescription Form */}
-                <div ref={componentRef} className="bg-white shadow-lg">
-                    {/* Header */}
-                    <div className="border-b-4 border-blue-800 p-6">
-                        <div className="flex justify-between items-start">
+                <div ref={componentRef} className="bg-white shadow-lg rounded-lg overflow-hidden">
+                    {/* Header - Responsive */}
+                    <div className="border-b-4 border-blue-800 p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-4">
                             <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 bg-blue-800 rounded-full flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-800 rounded-full flex items-center justify-center">
+                                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7z" />
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h1 className="text-2xl font-bold text-blue-800">MediCare Clinic</h1>
-                                    <p className="text-sm text-gray-600">Professional Medical Care</p>
+                                    <h1 className="text-xl sm:text-2xl font-bold text-blue-800">MediCare Clinic</h1>
+                                    <p className="text-xs sm:text-sm text-gray-600">Professional Medical Care</p>
                                     <p className="text-xs text-gray-500">License No: MC-2024-001 | Tel: (021) 111-2345</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="text-2xl font-bold text-blue-800">PRESCRIPTION</div>
-                                <div className="text-sm text-gray-600 mt-2">
+                            <div className="text-left sm:text-right w-full sm:w-auto">
+                                <div className="text-xl sm:text-2xl font-bold text-blue-800">PRESCRIPTION</div>
+                                <div className="text-xs sm:text-sm text-gray-600 mt-2">
                                     <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
                                     <p><strong>Dr.</strong> {doctor.name}</p>
                                     <p className="text-xs text-gray-500">{doctor.email}</p>
@@ -366,10 +358,10 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                         </div>
                     </div>
 
-                    {/* Form View - UPDATED WIDTH DISTRIBUTION */}
-                    <div className="form-view flex h-auto min-h-[500px]">
-                        {/* Patient Details Section - UPDATED: 25% width */}
-                        <div className="w-1/4 border-r border-gray-400 p-4"> {/* ✅ Changed from w-1/5 to w-1/4 (25%) */}
+                    {/* Form View - RESPONSIVE LAYOUT */}
+                    <div className="form-view flex flex-col lg:flex-row lg:h-auto lg:min-h-[500px]">
+                        {/* Patient Details Section - 25% on desktop, full width on mobile */}
+                        <div className="w-full lg:w-1/4 lg:border-r lg:border-gray-400 border-b lg:border-b-0 border-gray-400 p-4">
                             <div className="space-y-3">
                                 {/* Name - Required */}
                                 <div>
@@ -380,8 +372,9 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         type="text"
                                         value={patientName}
                                         onChange={(e) => setPatientName(e.target.value)}
-                                        className={`w-full h-9 px-2 border rounded focus:outline-none bg-white text-black text-sm ${!patientName.trim() ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
-                                            }`}
+                                        className={`w-full h-9 px-2 border rounded focus:outline-none bg-white text-black text-sm ${
+                                            !patientName.trim() ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                                        }`}
                                         placeholder="Patient name"
                                     />
                                 </div>
@@ -395,8 +388,9 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         type="text"
                                         value={patientAge}
                                         onChange={(e) => setPatientAge(e.target.value)}
-                                        className={`w-full h-9 px-2 border rounded focus:outline-none bg-white text-black text-sm ${!patientAge.trim() ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
-                                            }`}
+                                        className={`w-full h-9 px-2 border rounded focus:outline-none bg-white text-black text-sm ${
+                                            !patientAge.trim() ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                                        }`}
                                         placeholder="Age"
                                     />
                                 </div>
@@ -410,6 +404,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         onChange={(e) => setPatientCNIC(e.target.value)}
                                         className="w-full h-9 px-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
                                         maxLength={15}
+                                        placeholder="CNIC number"
                                     />
                                 </div>
 
@@ -421,6 +416,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                         value={patientPhone}
                                         onChange={(e) => setPatientPhone(e.target.value)}
                                         className="w-full h-9 px-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
+                                        placeholder="Phone number"
                                     />
                                 </div>
 
@@ -441,24 +437,24 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </div>
                         </div>
 
-                        {/* Medicines Section - UPDATED: 50% width */}
-                        <div className="w-1/2 border-r border-gray-400 p-6"> {/* ✅ Changed from w-2/5 to w-1/2 (50%) */}
+                        {/* Medicines Section - 50% on desktop, full width on mobile */}
+                        <div className="w-full lg:w-1/2 lg:border-r lg:border-gray-400 border-b lg:border-b-0 border-gray-400 p-4 lg:p-6">
                             <label className="block text-sm font-semibold text-gray-700 mb-3">
                                 Medicines <span className="text-red-500">*</span>
                             </label>
 
-                            <div className="max-h-80 overflow-y-auto pr-2 mb-4 border rounded-md border-gray-200 bg-gray-50">
+                            <div className="max-h-60 lg:max-h-80 overflow-y-auto pr-2 mb-4 border rounded-md border-gray-200 bg-gray-50">
                                 <div className="space-y-3 p-3">
                                     {medicines.map((medicine) => (
-                                        <div key={medicine.id} className="flex items-center gap-2 bg-white p-2 rounded border">
+                                        <div key={medicine.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-white p-2 rounded border">
                                             <input
                                                 type="text"
                                                 value={medicine.name}
                                                 onChange={(e) => updateMedicineName(medicine.id, e.target.value)}
-                                                className="flex-1 h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
+                                                className="w-full sm:flex-1 h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black text-sm"
                                                 placeholder="Medicine name"
                                             />
-                                            <div className="flex gap-2 ml-2 flex-shrink-0">
+                                            <div className="flex gap-2 justify-center sm:justify-start w-full sm:w-auto sm:flex-shrink-0">
                                                 {[0, 1, 2].map((index) => (
                                                     <label key={index} className="flex items-center gap-1 cursor-pointer">
                                                         <input
@@ -470,19 +466,19 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                                         <span className="text-sm font-medium text-gray-600">{index + 1}</span>
                                                     </label>
                                                 ))}
+                                                {medicines.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeMedicine(medicine.id)}
+                                                        className="no-print text-red-500 hover:text-red-700 p-1 flex-shrink-0 ml-2"
+                                                        title="Remove medicine"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                )}
                                             </div>
-                                            {medicines.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeMedicine(medicine.id)}
-                                                    className="no-print text-red-500 hover:text-red-700 p-1 flex-shrink-0"
-                                                    title="Remove medicine"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -502,14 +498,14 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                             </p>
                         </div>
 
-                        {/* Diagnosis & Tests Section - UPDATED: 25% width */}
-                        <div className="w-1/4 p-6"> {/* ✅ Changed from w-2/5 to w-1/4 (25%) */}
+                        {/* Diagnosis & Tests Section - 25% on desktop, full width on mobile */}
+                        <div className="w-full lg:w-1/4 p-4 lg:p-6">
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Diagnosis</label>
                                 <textarea
                                     value={diagnosis}
                                     onChange={(e) => setDiagnosis(e.target.value)}
-                                    className="w-full h-32 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black resize-none"
+                                    className="w-full h-24 lg:h-32 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black resize-none"
                                     placeholder="Enter diagnosis..."
                                 />
                             </div>
@@ -518,7 +514,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
                                 <textarea
                                     value={tests}
                                     onChange={(e) => setTests(e.target.value)}
-                                    className="w-full h-32 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black resize-none"
+                                    className="w-full h-24 lg:h-32 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none bg-white text-black resize-none"
                                     placeholder="Enter tests..."
                                 />
                             </div>
@@ -578,11 +574,11 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
                     {/* Footer */}
                     <div className="p-4 bg-gray-50 border-t">
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <div className="text-xs text-gray-600">
                                 <p><strong>Valid for 30 days</strong> | Contact: (021) 111-2345</p>
                             </div>
-                            <div className="text-right">
+                            <div className="text-left sm:text-right">
                                 <div className="w-40 border-b border-gray-400 mb-1"></div>
                                 <p className="text-sm font-medium">Dr. {doctor.name}</p>
                                 <p className="text-xs text-gray-500">PMDC Reg: 12345-A</p>
