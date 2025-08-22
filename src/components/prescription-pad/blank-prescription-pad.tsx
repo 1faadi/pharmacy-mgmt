@@ -44,7 +44,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
     // ✅ VALIDATION FUNCTION
     const validateForm = (): boolean => {
         if (!patientName.trim()) {
-            toast.error('❌ Please enter the patient\'s name!', {
+            toast.error(' Please enter the patient\'s name!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -55,7 +55,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
         }
 
         if (!patientAge.trim()) {
-            toast.error('❌ Please enter the patient\'s age!', {
+            toast.error(' Please enter the patient\'s age!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -67,7 +67,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
         const hasValidMedicine = medicines.some(med => med.name.trim() !== '')
         if (!hasValidMedicine) {
-            toast.error('❌ Please add at least one medicine!', {
+            toast.error(' Please add at least one medicine!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -169,7 +169,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
             setSavedPrescriptionId(result.prescription.id)
             setShowSaveSuccess(true)
 
-            toast.success('✅ Prescription saved successfully!', {
+            toast.success('Prescription saved successfully!', {
                 position: 'top-center',
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -181,7 +181,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
 
         } catch (error) {
             console.error('Error saving prescription:', error)
-            toast.error('❌ Failed to save prescription. Please try again!', {
+            toast.error('Failed to save prescription. Please try again!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
@@ -276,7 +276,7 @@ export default function RawPrescriptionPad({ doctor }: RawPrescriptionPadProps) 
             if (printView) (printView as HTMLElement).style.display = 'none'
         } catch (error) {
             console.error('Error generating PDF:', error)
-            toast.error('❌ Failed to generate PDF. Please try again!', {
+            toast.error(' Failed to generate PDF. Please try again!', {
                 position: 'top-center',
                 autoClose: 4000,
                 hideProgressBar: false,
