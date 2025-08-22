@@ -206,7 +206,7 @@ const menuItemVariants: Variants = {
                 </span>
               </div>
               <div className="hidden lg:block">
-                <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
+                <p className="text-sm font-medium text-gray-900">Dr. {session.user.name}</p>
                 <p className="text-xs text-gray-500">{session.user.roles.join(', ')}</p>
               </div>
             </div>
